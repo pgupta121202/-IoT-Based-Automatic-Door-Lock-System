@@ -1,0 +1,130 @@
+#include <LiquidCrystal.h>   
+#include <Keypad.h>
+#include <Servo.h>
+int var=0;
+int servostate;
+const int rs=A0, en=A1, d4=A2, d5=A3, d6=A4, d7=A5;
+int gateOpen = 0;
+int contrast=50;
+int gateClose = 90;
+char c1='1',c2='1',c3='1',c4='1';
+char a=0,b=0, c=0,d=0;
+int rgb[3]={0,12,13};
+int Buzzer = 10;
+int pir = 11;
+char f='*';  
+const byte row = 4; 
+const byte column = 4;
+char oct[row][column] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+byte pinRow[row] = {1,2,3, 4}; 
+byte pinColumn[column] = {5,6,7,8};
+
+Servo myservo;
+Keypad keypad = Keypad( makeKeymap(oct), pinRow, pinColumn, row, column );
+LiquidCrystal lcd(rs,en, d4, d5, d6,d7);
+void setup(){
+  analogWrite(12,contrast);
+   pinMode(rgb[0],OUTPUT);
+  pinMode(rgb[1],OUTPUT);
+  pinMode(rgb[2],OUTPUT);
+  lcd.begin(16,2); 
+  pinMode(pir, INPUT);
+  pinMode(Buzzer,OUTPUT);
+  myservo.attach(9); 
+  myservo.write(gateOpen);
+  servostate = 1;
+}
+void loop(){  
+  int val=digitalRead(pir);
+  char key = keypad.getKey();
+  if(val==HIGH){
+    analogWrite(rgb[1],255);
+     analogWrite(rgb[0],0);
+     analogWrite(rgb[2],0);
+    lcd.setCursor(0,0);
+    lcd.print("Enter Password:");
+     if (key){
+      lcd.setCursor(6+var,1);lcd.print(f);
+       var++;
+              switch (var){
+         case (1):
+                a=key;
+       break;
+       case (2):
+                b=key;
+       break;
+       case (3):
+                c=key;
+       break;
+       case (4):
+                d=key;
+         
+     delay(50);
+       
+  if(a==c1&&b==c2&&c==c3&&d==c4) {
+    analogWrite(rgb[2],255);
+     analogWrite(rgb[0],0);
+     analogWrite(rgb[1],0);
+    lcd.clear();
+    lcd.setCursor(4,0);
+    lcd.print("Door");
+    lcd.setCursor(5,1);
+    if(servostate == 0){
+      lcd.print("Lock");
+      
+       myservo.write(gateOpen);
+      servostate = 1;
+      delay(1000);
+    }
+    else{
+      analogWrite(rgb[2],255);
+       analogWrite(rgb[0],0);
+       analogWrite(rgb[1],0);
+      lcd.print("Unlock");
+      myservo.write(gateClose);
+      servostate = 0;
+      delay(5000);
+  }
+  }
+  else{
+    analogWrite(rgb[0],255);
+     analogWrite(rgb[1],0);
+     analogWrite(rgb[2],0);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Password Invalid");
+    lcd.setCursor(2,1);
+    lcd.print("Try Again!!");
+    digitalWrite(Buzzer,HIGH); 
+    delay(5000); 
+    lcd.clear();
+    digitalWrite(Buzzer,LOW);
+    }
+   var=0;
+   lcd.clear();
+     break;
+
+  }
+  delay(2);
+             }}
+ else
+ {
+   analogWrite(rgb[0],255);
+   analogWrite(rgb[2],255);
+    analogWrite(rgb[1],0);
+   lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("No one in the");
+   lcd.setCursor(0,1);
+   lcd.print("range, door lock");
+  
+  myservo.write(gateOpen);
+      servostate = 1;
+  delay(5000);
+    lcd.clear();
+ }}
